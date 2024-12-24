@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Translation</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var intervalId;
+            var isListening = false;
+
+            $('#languageForm').submit(function(event) {
+                event.preventDefault();
+                if (isListening) {
+                    clearInterval(intervalId);
+                    $('#startStopButton').text('Start Listening');
+                    isListening = false;
+                } else {
+                    startListening();
+                    $('#startStopButton').text('Stop Listening');
+                    isListening = true;
+                }
+            });
+
+            function startListening() {
+                var formData = $('#languageForm').serialize();
+                intervalId = setInterval(function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/listen',
+                        data: formData,
+                        success: function(response) {
+                            if (response.error) {
+                                // $('#result').append("<p>Error: " + response.error + "</p>");
+                            } else {
+                                // $('#result').append("<p>You said: " + response.spoken_text + "</p>");
+                                $('#result').append("<p>Translation: " + response.translated_text + "</p>");
+                            }
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
+                }, 5000); // Adjust interval time as needed (e.g., 5000 milliseconds = 5 seconds)
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Speech Translation</h1>
+    
+    <form id="languageForm">
+        <label for="language">Select a language for speech input:</label>
+        <select name="language" id="language">
+            <option value="kn">Kannada</option>
+            <option value="hi">Hindi</option>
+            <option value="ml">Malayalam</option>
+        </select>
+        <button id="startStopButton" type="submit">Start Listening</button>
+    </form>
+    
+    <div id="result">
+        <!-- Translated text will be appended here -->
+    </div>
+</body>
+</html>
